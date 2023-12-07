@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>IIIT JARVIS</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.4/dist/jquery.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+  <style>
+    #spinner-container {
+      position: absolute;
+      bottom: 100px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    #spinner {
+      margin-left: 5px;
+      width: 2rem;
+      height: 2rem;
+      border: 0.7rem solid #f3f3f3;
+      border-top-color: #3498db;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+
+    .chat-container {
+      height: 500px;
+      overflow-y: scroll;
+      padding-bottom: 50px;
+    }
+
+    .message {
+      margin-bottom: 20px;
+    }
+
+
+    .user-message {
+      text-align: right;
+      margin-top: 10px;
+      margin-left: 50px;
+    }
+
+    .bot-message {
+      text-align: left;
+      margin-top: 10px;
+      margin-right: 50px;
+    }
+  </style>
+</head>
+
+<body>
+  <nav class="navbar navbar-expand-sm bg-dark navbar-dark">
+    <div class="container-fluid">
+
+      <a class="navbar-brand text-white" href="#">
+        <img src="https://upload.wikimedia.org/wikipedia/en/0/0c/The_Genie_Aladdin.png" alt="Avatar Logo"
+          style="width:30px;" class="rounded-pill">
+        IIIT JARVIS
+      </a>
+      <!-- Nav pills -->
+      <ul class="nav nav-pills">
+        <li class="nav-item">
+          <a class="nav-link text-white active" data-toggle="pill" href="#qa-chat">Home</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link text-white" data-toggle="pill" href="#datasource">Source</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link disabled" data-toggle="pill" href="#apps">Apps</a>
+        </li>
+      </ul>
+
+
+    </div>
+  </nav>
+  <!-- Tab panes -->
+  <div class="tab-content">
+    <div id="datasource" class="container tab-pane fade bg-white border shadow-lg p-3 mt-3 ">
+      <ul class="nav nav-tabs">
+        <li class="nav-item">
+          <a class="nav-link active" data-toggle="pill" href="#source-file">File</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link  " data-toggle="pill" href="#source-url"> Public Website</a>
+        </li>
+
+      </ul>
+
+      <div class="tab-content p-2 m-3">
+        <form action="/load_db_hc" class="tab-pane fade" id="source-url" enctype="multipart/form-data" method="post">
+          <div class="form-group input-group">
+            <div class="input-group-prepend">
+              <span class="input-group-text">Web URL</span>
+            </div>
+            <input type="text" class="form-control" id="web_url" placeholder="https://ltrc.iiit.ac.in/" name="web_url">
+          </div>
+
+          <button type="submit" class="btn btn-success">Add</button>
+
+        </form>
+        <form action="/load_db_file" class="tab-pane active" id="source-file" enctype="multipart/form-data"
+          method="post">
+          <div class="form-group ">
+            <input type="file" class="form-control" id="srcfile" name="srcfile">
+          </div>
+
+
+          <button type="submit" class="btn btn-success">Upload</button>
+
+        </form>
+      </div>
+    </div>
+    <div id="qa-chat" class="container tab-pane active bg-white border shadow-lg p-3 mt-3 ">
+      <div id="chat-container" class="chat-container ">
+        <!-- Bot's initial message -->
+        <div class="card bg-light bot-message shadow-sm">
+          <div class="card-body text-left shadow-sm rounded">Hi, Welcome to JARVIS (Just A Rather Intelligent System) - RAG based chat interface for QA System based on Input Questions
+          </div>
+        </div>
+
+        <!-- Add more messages here -->
+      </div>
+
+
+      <div class="input-container ">
+        <form id="chat-form" class="input-group p-2">
+
+          <input id="user-input" class="form-control p-2" type="text" name="question" placeholder="Enter your Question"
+            required>
+          <input class="input-group-append  input-group-text text-white bg-success" type="submit" value="Send">
+        </form>
+
+      </div>
+    </div>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script>
+    $(document).ready(function () {
+      $("#chat-form").submit(function (e) {
+        e.preventDefault();
+
+        // Get user input
+        var userInput = $("#user-input").val();
+
+        // Clear the input field
+        $("#user-input").val("");
+
+        // Disable the input field and submit button
+        $("#user-input").prop("disabled", true);
+        $(":submit").prop("disabled", true);
+
+        // Show the spinner
+        $("#spinner").show();
+
+        // Append user's message to the chat window
+        $("#chat-container").append(`
+            <div class="card bg-light font-weight-bold shadow-sm rounded user-message">
+              <div class="card-body text-right">${userInput}</div>
+            </div>
+          `);
+
+
+
+        // Scroll to the bottom of the chat window
+        $("#chat-container").scrollTop($("#chat-container")[0].scrollHeight);
+        $("#chat-container").append(`
+        <div id="spinner-container" class="text-center">
+          <div id="spinner"></div>
+        </div>
+      `);
+        // Send user input to the server using Ajax
+        $.ajax({
+          type: "POST",
+          url: "/query",
+          data: { query: userInput },
+          success: function (response) {
+            // Hide the spinner
+            $("#spinner-container").remove();
+
+            // Enable the input field and submit button
+            $("#user-input").prop("disabled", false);
+            $(":submit").prop("disabled", false);
+
+            // Parse the JSON response
+            var botResponse = response.result;
+            var botReference = response.referenceLink;
+
+
+            // Append the bot's response to the chat window
+            $("#chat-container").append(`
+                <div class="card shadow-sm rounded bot-message">
+                  <div class="card-body text-left">${botResponse}</div>
+                  <div class="card-footer italic small font-weight-light"><a href="${botReference}">${botReference}</a></div>
+        </div>
+                </div>
+              `);
+
+            // Scroll to the bottom of the chat window
+            $("#chat-container").scrollTop($("#chat-container")[0].scrollHeight);
+          },
+          error: function () {
+            // Hide the spinner
+            $("#spinner-container").remove();
+
+            // Enable the input field and submit button
+            $("#user-input").prop("disabled", false);
+            $(":submit").prop("disabled", false);
+
+            // Handle error case
+            console.log("Error occurred during Ajax request.");
+          }
+        });
+      });
+    });
+  </script>
+
+</body>
+
+</html>
